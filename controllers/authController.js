@@ -9,7 +9,20 @@ const createToken = (id)=> {
 
 // validation error handling
 const handleError = (err)=> {
-    console.log(err)
+    const error = { email: '', password: '' }
+    // Unique email validation
+    if(err.code === 11000) {
+        error.email = 'email already registered'
+        return error
+    }
+
+    // email and password validation
+    if(err.message.includes('user validation failed')) {
+        Object.values(err.errors).forEach(({properties})=> {
+            error[properties.path] = properties.message
+        })
+    }
+    return error
 }
 
 module.exports.signup = async (req, res)=> {
@@ -19,7 +32,8 @@ module.exports.signup = async (req, res)=> {
         const token = createToken(data._id)
         res.json({ uid: data._id, authToken: token });
     } catch(err) {
-        res.send(handleError)
+        const isError = handleError(err);
+        res.status(400).json(isError);
     }
 }
 
