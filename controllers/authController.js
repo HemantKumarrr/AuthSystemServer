@@ -1,6 +1,6 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
-const UserOTP = require('../models/UserOTP')
+const UserOTP = require('../models/sendOTP')
 const sendMail = require('../services/mail')
 
 // creating jwt function
