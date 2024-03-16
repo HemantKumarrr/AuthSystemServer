@@ -10,7 +10,7 @@ connectDB();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors({
-    origin: 'https://auth-system-client.vercel.app'
+    origin: 'https://auth-system-client.vercel.app',
 }))
 app.use(express.json())
 

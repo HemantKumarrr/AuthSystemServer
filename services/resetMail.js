@@ -10,18 +10,19 @@ const transporter = nodemailer.createTransport({
 })
 
 
-const sendMail = async (receiverMail, OTPcode)=> {
+const sendMailReset = async (receiverMail, resetUrl)=> {
     const mailOptions = {
         from: process.env.MY_GMAIL,
         to: receiverMail,
-        subject: "One-time verification code",
+        subject: "Reset your password",
         text: `
-        Verification code
-        Please use the verification code below.
+        Hi ${receiverMail},
+
+        We got a request to reset your password.
         
-        ${OTPcode}
+        ${resetUrl}
         
-        If you didn’t request this, you can ignore this email.
+        If you ignore this message, your password will not be changed. 
         
         Thanks`
     }
@@ -34,4 +35,4 @@ const sendMail = async (receiverMail, OTPcode)=> {
 
 }
 
-module.exports = sendMail;
+module.exports = sendMailReset;

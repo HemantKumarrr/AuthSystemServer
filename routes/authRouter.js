@@ -10,5 +10,7 @@ router.get('/', (req, res)=> {
 router.post('/signup', authController.signup );
 router.post('/login', authController.login );
 router.post('/sendotp', authController.sendOTP );
+router.post('/login/forgot-password', authController.forgot_password );
+router.post('/reset-password', authController.reset_password );
 
 module.exports = router;
