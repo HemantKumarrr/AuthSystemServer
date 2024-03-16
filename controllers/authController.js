@@ -1,11 +1,14 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const UserOTP = require('../models/UserOTP')
+const sendMail = require('../services/mail')
 
 // creating jwt function
 const createToken = (id)=> {
     const token = jwt.sign({ id }, process.env.SECRECT_KEY, { expiresIn: '1d' });
     return token;
 }
+
 
 // validation error handling
 const handleError = (err)=> {
@@ -25,6 +28,7 @@ const handleError = (err)=> {
     return error
 }
 
+
 module.exports.signup = async (req, res)=> {
     try {
         const { username, email, password } = req.body;
@@ -39,11 +43,39 @@ module.exports.signup = async (req, res)=> {
 
 module.exports.login = async (req, res)=> {
     try {
-        const { email, password } = req.body;
+        const { email, password, otp } = req.body;
         const data = await User.login(email, password);
-        const token = createToken(data._id)
-        res.json({ uid: data._id, authToken: token });
+        const token = createToken(data._id);
+        const verifiedOTP = await UserOTP.findOne({ email });
+        if(verifiedOTP.otp === otp ) {
+            res.json({ uid: data._id, authToken: token, message: "OTP verified" });
+        } else {
+            res.status(400).json({ message: "Wrong otp" });
+        }
     } catch(err) {
         res.status(400).json({ error: err.message });
+    }
+}
+
+
+module.exports.sendOTP = async (req, res)=> {
+    try {
+        const { email } = req.body;
+        const validEmail = await User.findOne({ email });
+        if(!validEmail) return res.status(400).json({ error: "user not found" });
+        const otp = Math.floor(Math.random()*900000 + 100000)
+        const exitsEmail = await UserOTP.findOne({ email });
+        if(exitsEmail) {
+            const updateData = await UserOTP.updateOne({ _id: exitsEmail._id }, { $set: {otp}});
+            sendMail(email, otp);
+            res.send({ message: "OTP sent successfully"});
+        } else {
+            const saveOTP = await UserOTP.create({ email: email , otp: otp });
+            sendMail(email, otp);
+            res.send({ message: "OTP sent successfully"});
+        }
+    } catch (err) {
+        res.status(400).json({ error: "something went wrong!"})
+        console.log(err)
     }
 }
