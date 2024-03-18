@@ -11,8 +11,9 @@ const PORT = process.env.PORT || 5000;
 
 app.use(cors({
     origin: 'https://auth-system-client.vercel.app',
-}))
-app.use(express.json())
+    credentials: true
+}));
+app.use(express.json());
 
 // Routes
 app.use(authRouter)

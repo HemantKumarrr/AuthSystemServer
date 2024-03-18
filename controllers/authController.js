@@ -1,5 +1,6 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
+const bcrypt = require('bcrypt')
 const UserOTP = require("../models/sendOTP");
 const sendMail = require("../services/mail");
 const sendMailReset = require("../services/resetMail");
@@ -86,7 +87,7 @@ module.exports.forgot_password = async (req, res) => {
     const { email } = req.body;
     const validEmail = await User.findOne({ email });
     if (!validEmail) return res.status(400).json({ message: "no user found" });
-    const resetUrl = `https://auth-system-client.vercel.app/forgot-password/user/reset-password`;
+    const resetUrl = `auth-system-client.vercel.app/reset-password`;
     sendMailReset(email, resetUrl);
     res.status(200).json({ message: "Check your mail" });
   } catch (err) {
@@ -96,14 +97,16 @@ module.exports.forgot_password = async (req, res) => {
 
 module.exports.reset_password = async (req, res) => {
   try {
-    const { password } = req.body;
+    const { email, password } = req.body;
+    const salt = await bcrypt.genSalt();
+    const hashPassword = await bcrypt.hash(password, salt);
     const userData = await User.findOne({ email });
     const updatePassword = await User.updateOne(
       { _id: userData._id },
-      { $set: { password } }
+      { $set: { password: hashPassword } }
     );
     res.json({ message: "Password reset successfully" });
   } catch (err) {
-    res.status(400).json({ error: err });
+    res.status(400).json({ error: "internal server error" });
   }
 };
