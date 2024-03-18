@@ -87,7 +87,7 @@ module.exports.forgot_password = async (req, res) => {
     const { email } = req.body;
     const validEmail = await User.findOne({ email });
     if (!validEmail) return res.status(400).json({ message: "no user found" });
-    const resetUrl = `auth-system-client.vercel.app/reset-password`;
+    const resetUrl = `auth-system-client.vercel.app/reset-password/${validEmail._id}`;
     sendMailReset(email, resetUrl);
     res.status(200).json({ message: "Check your mail" });
   } catch (err) {
@@ -97,10 +97,11 @@ module.exports.forgot_password = async (req, res) => {
 
 module.exports.reset_password = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { password } = req.body;
+    const id = req.params.id
     const salt = await bcrypt.genSalt();
     const hashPassword = await bcrypt.hash(password, salt);
-    const userData = await User.findOne({ email });
+    const userData = await User.findOne({ _id: id });
     const updatePassword = await User.updateOne(
       { _id: userData._id },
       { $set: { password: hashPassword } }
